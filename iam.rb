@@ -74,4 +74,4 @@ end
 puts "Total = #{total}"
 timestamp_finish = Time.now
 
-puts "Finished IAM import. Time elapsed: " + (timestamp_finish - timestamp_start).to_s + " seconds"
+puts "Finished IAM import. Time elapsed: " + Time.at(timestamp_finish - timestamp_start).gmtime.strftime('%R:%S')
