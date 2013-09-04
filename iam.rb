@@ -53,7 +53,7 @@ for d in UcdLookups::DEPT_CODES.keys()
     isStudent = result["responseData"]["results"][0]["isStudent"]
     isStaff = result["responseData"]["results"][0]["isStaff"]
 
-    ## First, fetch the contact info
+    ## Second, fetch the contact info
     url = "#{site}iam/people/contactinfo/#{p['iamId']}?key=#{key}&v=1.0"
     # Fetch URL
     resp = Net::HTTP.get_response(URI.parse(url))
@@ -65,7 +65,17 @@ for d in UcdLookups::DEPT_CODES.keys()
     phone = result["responseData"]["results"][0]["workPhone"]
     address = result["responseData"]["results"][0]["postalAddress"]
 
-    ## Third, fetch the association
+    ## Third, fetch the kerberos userid
+    url = "#{site}iam/people/prikerbacct/#{p['iamId']}?key=#{key}&v=1.0"
+    # Fetch URL
+    resp = Net::HTTP.get_response(URI.parse(url))
+    # Parse results
+    buffer = resp.body
+    result = JSON.parse(buffer)
+    
+    userId = result["responseData"]["results"][0]["userId"]
+
+    ## Forth, fetch the association
     url = "#{site}iam/associations/pps/search?iamId=#{p['iamId']}&key=#{key}&v=1.0"
     # Fetch URL
     resp = Net::HTTP.get_response(URI.parse(url))
@@ -77,7 +87,7 @@ for d in UcdLookups::DEPT_CODES.keys()
     title = result["responseData"]["results"][0]["titleOfficialName"]
 
     ## Display the results (Or insert them in database)
-    puts "#{p['iamId']}: #{first} #{last} <#{email}> works for #{dept} as a #{title}"
+    puts "#{p['iamId']}: #{userId} -- #{first} #{last} <#{email}> works for #{dept} as a #{title}"
   end
 
 end
