@@ -1,0 +1,5 @@
+# Copy this file to iam.yml and set the appropriate values below.
+
+HOST: https://iam-base-url/
+KEY: API-KEY
+
