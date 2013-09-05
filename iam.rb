@@ -9,6 +9,7 @@ if File.file?(IAM_SETTINGS_FILE)
   $IAM_SETTINGS = YAML.load_file(IAM_SETTINGS_FILE)
   @site = $IAM_SETTINGS['HOST']
   @key = $IAM_SETTINGS['KEY']
+  @iamId = ARGV[0]
 else
   puts "You need to set up config/iam.yml before running this application."
   exit
@@ -79,25 +80,30 @@ total = 0
 timestamp_start = Time.now
 
 ### In case no arguments are provided, we fetch for all people in UcdLookups departments
-for d in UcdLookups::DEPT_CODES.keys()
+if @iamId.nil?
+  for d in UcdLookups::DEPT_CODES.keys()
 
-  ## Fetch department members
-  url = "#{@site}iam/associations/pps/search?deptCode=#{d}&key=#{@key}&v=1.0"
+    ## Fetch department members
+    url = "#{@site}iam/associations/pps/search?deptCode=#{d}&key=#{@key}&v=1.0"
 
-  # Fetch URL
-  resp = Net::HTTP.get_response(URI.parse(url))
+    # Fetch URL
+    resp = Net::HTTP.get_response(URI.parse(url))
 
-  # Parse results
-  buffer = resp.body
-  result = JSON.parse(buffer)
+    # Parse results
+    buffer = resp.body
+    result = JSON.parse(buffer)
 
-  total += result["responseData"]["results"].length.to_i
+    total += result["responseData"]["results"].length.to_i
 
-  # loop over members
-  result["responseData"]["results"].each do |p|
-    fetch_by_iamId(p['iamId'])
+    # loop over members
+    result["responseData"]["results"].each do |p|
+      fetch_by_iamId(p['iamId'])
+    end
+
   end
-
+else
+  fetch_by_iamId(@iamId)
+  total = 1
 end
 
 timestamp_finish = Time.now
