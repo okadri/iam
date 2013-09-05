@@ -64,6 +64,7 @@ def fetch_by_iamId(id)
 
   dept = result["responseData"]["results"][0]["deptOfficialName"]
   title = result["responseData"]["results"][0]["titleOfficialName"]
+  positionType = result["responseData"]["results"][0]["positionType"]
 
   ## Display the results (Or insert them in database)
   puts "#{id}: #{loginid} -- #{first} #{last} <#{email}> works for #{dept} as a #{title}"
