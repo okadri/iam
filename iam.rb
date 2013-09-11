@@ -83,8 +83,36 @@ def fetch_by_iamId(id)
   title = result["responseData"]["results"][0]["titleOfficialName"]
   positionType = result["responseData"]["results"][0]["positionType"]
 
+
+
   ## Display the results (Or insert them in database)
-  puts "#{id}: #{loginid} -- #{first} #{last} <#{email}> works for #{dept} as a #{title}"
+  rm = Person.find(loginid)
+  puts "IAM_ID: #{id} --> RM_ID #{rm.id} (#{first} #{last}):".cyan
+
+  #Comparing First Name
+  if first == rm.first
+    comparison = "matches".green
+  else
+    comparison = "differs: IAM (#{first}), RM (#{rm.first})".red
+  end
+  puts "\t- First name #{comparison}"
+
+  #Comparing Last Name
+  if last == rm.last
+    comparison = "matches".green
+  else
+    comparison = "differs: IAM (#{last}), RM (#{rm.last})".red
+  end
+  puts "\t- Last name #{comparison}"
+
+  #Comparing Title
+  if title == rm.title
+    comparison = "matches".green
+  else
+    comparison = "differs: IAM (#{title}), RM (#{rm.title})".red
+  end
+  puts "\t- Title #{comparison}"
+
 end
 
 
@@ -124,4 +152,4 @@ end
 
 timestamp_finish = Time.now
 
-puts "Finished importing a total of #{total}. Time elapsed: " + Time.at(timestamp_finish - timestamp_start).gmtime.strftime('%R:%S')
+puts "Finished processing a total of #{total}. Time elapsed: " + Time.at(timestamp_finish - timestamp_start).gmtime.strftime('%R:%S')
