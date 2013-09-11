@@ -33,86 +33,89 @@ require './models/person.rb'
 
 ### Method to get individual info
 def fetch_by_iamId(id)
-  ## First, fetch the person
-  url = "#{@site}iam/people/search/?iamId=#{id}&key=#{@key}&v=1.0"
-  # Fetch URL
-  resp = Net::HTTP.get_response(URI.parse(url))
-  # Parse results
-  buffer = resp.body
-  result = JSON.parse(buffer)
+  begin
+    ## First, fetch the person
+    url = "#{@site}iam/people/search/?iamId=#{id}&key=#{@key}&v=1.0"
+    # Fetch URL
+    resp = Net::HTTP.get_response(URI.parse(url))
+    # Parse results
+    buffer = resp.body
+    result = JSON.parse(buffer)
 
-  first = result["responseData"]["results"][0]["dFirstName"]
-  middle = result["responseData"]["results"][0]["oMiddleName"]
-  last = result["responseData"]["results"][0]["dLastName"]
-  isEmployee = result["responseData"]["results"][0]["isEmployee"]
-  isFaculty = result["responseData"]["results"][0]["isFaculty"]
-  isStudent = result["responseData"]["results"][0]["isStudent"]
-  isStaff = result["responseData"]["results"][0]["isStaff"]
+    first = result["responseData"]["results"][0]["dFirstName"]
+    middle = result["responseData"]["results"][0]["oMiddleName"]
+    last = result["responseData"]["results"][0]["dLastName"]
+    isEmployee = result["responseData"]["results"][0]["isEmployee"]
+    isFaculty = result["responseData"]["results"][0]["isFaculty"]
+    isStudent = result["responseData"]["results"][0]["isStudent"]
+    isStaff = result["responseData"]["results"][0]["isStaff"]
 
-  ## Second, fetch the contact info
-  url = "#{@site}iam/people/contactinfo/#{id}?key=#{@key}&v=1.0"
-  # Fetch URL
-  resp = Net::HTTP.get_response(URI.parse(url))
-  # Parse results
-  buffer = resp.body
-  result = JSON.parse(buffer)
+    ## Second, fetch the contact info
+    url = "#{@site}iam/people/contactinfo/#{id}?key=#{@key}&v=1.0"
+    # Fetch URL
+    resp = Net::HTTP.get_response(URI.parse(url))
+    # Parse results
+    buffer = resp.body
+    result = JSON.parse(buffer)
 
-  email = result["responseData"]["results"][0]["email"]
-  phone = result["responseData"]["results"][0]["workPhone"]
-  address = result["responseData"]["results"][0]["postalAddress"]
+    email = result["responseData"]["results"][0]["email"]
+    phone = result["responseData"]["results"][0]["workPhone"]
+    address = result["responseData"]["results"][0]["postalAddress"]
 
-  ## Third, fetch the kerberos userid
-  url = "#{@site}iam/people/prikerbacct/#{id}?key=#{@key}&v=1.0"
-  # Fetch URL
-  resp = Net::HTTP.get_response(URI.parse(url))
-  # Parse results
-  buffer = resp.body
-  result = JSON.parse(buffer)
+    ## Third, fetch the kerberos userid
+    url = "#{@site}iam/people/prikerbacct/#{id}?key=#{@key}&v=1.0"
+    # Fetch URL
+    resp = Net::HTTP.get_response(URI.parse(url))
+    # Parse results
+    buffer = resp.body
+    result = JSON.parse(buffer)
 
-  loginid = result["responseData"]["results"][0]["userId"]
+    loginid = result["responseData"]["results"][0]["userId"]
 
-  ## Forth, fetch the association
-  url = "#{@site}iam/associations/pps/search?iamId=#{id}&key=#{@key}&v=1.0"
-  # Fetch URL
-  resp = Net::HTTP.get_response(URI.parse(url))
-  # Parse results
-  buffer = resp.body
-  result = JSON.parse(buffer)
+    ## Forth, fetch the association
+    url = "#{@site}iam/associations/pps/search?iamId=#{id}&key=#{@key}&v=1.0"
+    # Fetch URL
+    resp = Net::HTTP.get_response(URI.parse(url))
+    # Parse results
+    buffer = resp.body
+    result = JSON.parse(buffer)
 
-  dept = result["responseData"]["results"][0]["deptOfficialName"]
-  title = result["responseData"]["results"][0]["titleOfficialName"]
-  positionType = result["responseData"]["results"][0]["positionType"]
+    dept = result["responseData"]["results"][0]["deptOfficialName"]
+    title = result["responseData"]["results"][0]["titleOfficialName"]
+    positionType = result["responseData"]["results"][0]["positionType"]
 
 
 
-  ## Display the results (Or insert them in database)
-  rm = Person.find(loginid)
-  puts "IAM_ID: #{id} --> RM_ID #{rm.id} (#{first} #{last}):".cyan
+    ## Display the results (Or insert them in database)
+    rm = Person.find(loginid)
+    puts "IAM_ID: #{id} --> RM_ID #{rm.id} (#{first} #{last}):".cyan
 
-  #Comparing First Name
-  if first == rm.first
-    comparison = "matches".green
-  else
-    comparison = "differs: IAM (#{first}), RM (#{rm.first})".red
+    #Comparing First Name
+    if first == rm.first
+      comparison = "matches".green
+    else
+      comparison = "differs: IAM (#{first}), RM (#{rm.first})".yellow 
+    end
+    puts "\t- First name #{comparison}"
+
+    #Comparing Last Name
+    if last == rm.last
+      comparison = "matches".green
+    else
+      comparison = "differs: IAM (#{last}), RM (#{rm.last})".yellow 
+    end
+    puts "\t- Last name #{comparison}"
+
+    #Comparing Title
+    if title == rm.title
+      comparison = "matches".green
+    else
+      comparison = "differs: IAM (#{title}), RM (#{rm.title})".yellow 
+    end
+    puts "\t- Title #{comparison}"
+  rescue StandardError => e
+    puts "Cannot process ID#: #{id} -- #{e.message} #{e.backtrace.inspect}".light_red
   end
-  puts "\t- First name #{comparison}"
-
-  #Comparing Last Name
-  if last == rm.last
-    comparison = "matches".green
-  else
-    comparison = "differs: IAM (#{last}), RM (#{rm.last})".red
-  end
-  puts "\t- Last name #{comparison}"
-
-  #Comparing Title
-  if title == rm.title
-    comparison = "matches".green
-  else
-    comparison = "differs: IAM (#{title}), RM (#{rm.title})".red
-  end
-  puts "\t- Title #{comparison}"
-
 end
 
 
