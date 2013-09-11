@@ -1,8 +1,13 @@
+require 'rubygems'
+require 'bundler/setup'
+Bundler.require
+
 require 'net/http'
 require 'json'
 require 'yaml'
 load 'UcdLookups.rb'
 IAM_SETTINGS_FILE = "config/iam.yml"
+DSS_RM_FILE = "config/dss_rm.yml"
 
 ### Import the IAM site and key from the yaml file
 if File.file?(IAM_SETTINGS_FILE)
@@ -14,6 +19,17 @@ else
   puts "You need to set up config/iam.yml before running this application."
   exit
 end
+
+### Import the DSS RM site and key from the yaml file
+if File.file?(DSS_RM_FILE)
+  $DSS_RM_SETTINGS = YAML.load_file(DSS_RM_FILE)
+else
+  puts "You need to set up config/dss_rm.yml before running this application."
+  exit
+end
+
+require './models/entity.rb'
+require './models/person.rb'
 
 ### Method to get individual info
 def fetch_by_iamId(id)

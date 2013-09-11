@@ -1,0 +1,6 @@
+# Remove this file to dss-rm.yml and set the appropriate values below.
+
+HOST: https://rm-instance/
+USER: username
+PASSWORD: password
+
