@@ -106,6 +106,32 @@ def fetch_by_iamId(id)
     end
     puts "\t- Last name #{comparison}"
 
+    #Comparing Email
+    if email == rm.email
+      comparison = "matches".green
+    else
+      comparison = "differs: IAM (#{email}), RM (#{rm.email})".yellow 
+    end
+    puts "\t- Email #{comparison}"
+
+    #Comparing Phone
+    unless phone.nil? or rm.phone.nil?
+      if phone.gsub(/[^0-9]/,'') == rm.phone.gsub(/[^0-9]/,'')
+        comparison = "matches".green
+      else
+        comparison = "differs: IAM (#{phone}), RM (#{rm.phone})".yellow 
+      end
+      puts "\t- Phone #{comparison}"
+    end
+
+    #Comparing Address
+    if address == rm.address
+      comparison = "matches".green
+    else
+      comparison = "differs: IAM (#{address}), RM (#{rm.address})".yellow 
+    end
+    puts "\t- Address #{comparison}"
+
     #Comparing Title
     if title == rm.title
       comparison = "matches".green
