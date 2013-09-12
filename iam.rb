@@ -39,7 +39,7 @@ require './models/entity.rb'
 require './models/person.rb'
 
 ### Method to get individual info
-def fetch_by_iamId(id)
+def fetch_by_iamId(id,rm_id)
   begin
     ## First, fetch the person
     url = "#{@site}iam/people/search/?iamId=#{id}&key=#{@key}&v=1.0"
@@ -77,7 +77,11 @@ def fetch_by_iamId(id)
     buffer = resp.body
     result = JSON.parse(buffer)
 
-    loginid = result["responseData"]["results"][0]["userId"]
+    begin
+      loginid = result["responseData"]["results"][0]["userId"]
+    rescue
+      puts "ID# #{id} does not have a loginId in IAM".light_red
+    end
 
     ## Forth, fetch the association
     url = "#{@site}iam/associations/pps/search?iamId=#{id}&key=#{@key}&v=1.0"
@@ -87,15 +91,16 @@ def fetch_by_iamId(id)
     buffer = resp.body
     result = JSON.parse(buffer)
 
-    dept = result["responseData"]["results"][0]["deptOfficialName"]
-    title = result["responseData"]["results"][0]["titleOfficialName"]
-    positionType = result["responseData"]["results"][0]["positionType"]
-
+    if result['responseData']['results'].count > 0
+      dept = result["responseData"]["results"][0]["deptOfficialName"]
+      title = result["responseData"]["results"][0]["titleOfficialName"]
+      positionType = result["responseData"]["results"][0]["positionType"]
+    end
 
 
     ## Display the results (Or insert them in database)
-    rm = Person.find(loginid)
-    puts "IAM_ID: #{id} --> RM_ID #{rm.id} (#{first} #{last}):".cyan
+    rm = Person.find(rm_id)
+    puts "IAM_ID: #{id} --> RM_ID #{rm_id} (#{first} #{last}):".cyan
 
     #Comparing First Name
     if first == rm.first
@@ -158,8 +163,8 @@ end
 ### In case no arguments are provided, we fetch for all people in UcdLookups departments
 if @iamId.nil?
   rm_people = Entity.all.select{ |x| x.type == "Person" }
-  @total = rm_people.count
   rm_people.each do |p|
+    @total += 1
     person = Person.find(p.loginid)
     first = person.first.gsub(/\s+/, '') unless person.first.nil?
     last = person.last.gsub(/\s+/, '') unless person.last.nil?
@@ -172,7 +177,7 @@ if @iamId.nil?
 
     begin
       iamID = result["responseData"]["results"][0]["iamId"]
-      fetch_by_iamId(iamID)
+      fetch_by_iamId(iamID,p.id)
     rescue
       puts "#{p.name} (#{p.loginid}) not found".magenta
       @notFound += 1
@@ -185,7 +190,7 @@ end
 
 timestamp_finish = Time.now
 
-puts "Finished comparing a total of #{@total}:\n"
+puts "\n\nFinished comparing a total of #{@total}:\n"
 puts "\t- #{@successfullyCompared} successfully compared.\n"
 puts "\t- #{@notFound} were not found in IAM.\n"
 puts "\t- #{@erroredOut} errored out due to some missing fields.\n"
