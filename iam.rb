@@ -8,6 +8,13 @@ require 'yaml'
 load 'UcdLookups.rb'
 IAM_SETTINGS_FILE = "config/iam.yml"
 DSS_RM_FILE = "config/dss_rm.yml"
+@total = @successfullyCompared = @notFound = @erroredOut = 0
+timestamp_start = Time.now
+
+# In case you receive SSL certificate verification errors
+require 'openssl'
+OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
+
 
 ### Import the IAM site and key from the yaml file
 if File.file?(IAM_SETTINGS_FILE)
@@ -139,22 +146,19 @@ def fetch_by_iamId(id)
       comparison = "differs: IAM (#{title}), RM (#{rm.title})".yellow 
     end
     puts "\t- Title #{comparison}"
+    
+    @successfullyCompared += 1
   rescue StandardError => e
     puts "Cannot process ID#: #{id} -- #{e.message} #{e.backtrace.inspect}".light_red
+    @erroredOut += 1
   end
 end
 
 
-# In case you receive SSL certificate verification errors
-require 'openssl'
-OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
-
-total = 0
-timestamp_start = Time.now
-
 ### In case no arguments are provided, we fetch for all people in UcdLookups departments
 if @iamId.nil?
   rm_people = Entity.all.select{ |x| x.type == "Person" }
+  @total = rm_people.count
   rm_people.each do |p|
     person = Person.find(p.loginid)
     first = person.first.gsub(/\s+/, '') unless person.first.nil?
@@ -171,13 +175,18 @@ if @iamId.nil?
       fetch_by_iamId(iamID)
     rescue
       puts "#{p.name} (#{p.loginid}) not found".magenta
+      @notFound += 1
     end
   end
 else
   fetch_by_iamId(@iamId)
-  total = 1
+  @total = 1
 end
 
 timestamp_finish = Time.now
 
-puts "Finished processing a total of #{total}. Time elapsed: " + Time.at(timestamp_finish - timestamp_start).gmtime.strftime('%R:%S')
+puts "Finished comparing a total of #{@total}:\n"
+puts "\t- #{@successfullyCompared} successfully compared.\n"
+puts "\t- #{@notFound} were not found in IAM.\n"
+puts "\t- #{@erroredOut} errored out due to some missing fields.\n"
+puts "Time elapsed: " + Time.at(timestamp_finish - timestamp_start).gmtime.strftime('%R:%S')
