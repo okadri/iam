@@ -154,25 +154,24 @@ timestamp_start = Time.now
 
 ### In case no arguments are provided, we fetch for all people in UcdLookups departments
 if @iamId.nil?
-  for d in UcdLookups::DEPT_CODES.keys()
-
-    ## Fetch department members
-    url = "#{@site}iam/associations/pps/search?deptCode=#{d}&key=#{@key}&v=1.0"
-
+  rm_people = Entity.all.select{ |x| x.type == "Person" }
+  rm_people.each do |p|
+    person = Person.find(p.loginid)
+    first = person.first.gsub(/\s+/, '') unless person.first.nil?
+    last = person.last.gsub(/\s+/, '') unless person.last.nil?
+    url = "#{@site}iam/people/search?oFirstName=#{first}&oLastName=#{last}&key=#{@key}&v=1.0"
     # Fetch URL
     resp = Net::HTTP.get_response(URI.parse(url))
-
     # Parse results
     buffer = resp.body
     result = JSON.parse(buffer)
 
-    total += result["responseData"]["results"].length.to_i
-
-    # loop over members
-    result["responseData"]["results"].each do |p|
-      fetch_by_iamId(p['iamId'])
+    begin
+      iamID = result["responseData"]["results"][0]["iamId"]
+      fetch_by_iamId(iamID)
+    rescue
+      puts "#{p.name} (#{p.loginid}) not found".magenta
     end
-
   end
 else
   fetch_by_iamId(@iamId)
