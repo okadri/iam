@@ -100,7 +100,7 @@ def fetch_by_iamId(id,rm_id)
 
     ## Display the results (Or insert them in database)
     rm = Person.find(rm_id)
-    puts "IAM_ID: #{id} --> RM_ID #{rm_id} (#{first} #{last}):".cyan
+    puts "IAM_ID: #{id} --> RM_ID #{rm_id} (#{rm.first} #{rm.last}):".cyan
 
     #Comparing First Name
     if first == rm.first
