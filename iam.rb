@@ -91,11 +91,7 @@ def fetch_by_iamId(id,rm_id)
     buffer = resp.body
     result = JSON.parse(buffer)
 
-    if result['responseData']['results'].count > 0
-      dept = result["responseData"]["results"][0]["deptOfficialName"]
-      title = result["responseData"]["results"][0]["titleOfficialName"]
-      positionType = result["responseData"]["results"][0]["positionType"]
-    end
+    associations = result['responseData']['results']
 
 
     ## Display the results (Or insert them in database)
@@ -144,13 +140,16 @@ def fetch_by_iamId(id,rm_id)
     end
     puts "\t- Address #{comparison}"
 
-    #Comparing Title
-    if title == rm.title
-      comparison = "matches".green
-    else
-      comparison = "differs: IAM (#{title}), RM (#{rm.title})".yellow 
+    #Comparing Associations
+    associations.each do |a|
+      puts "\t- #{a['deptOfficialName']}"
+      if a["titleOfficialName"] == rm.title
+        comparison = "matches".green
+      else
+        comparison = "differs: IAM (#{a['titleOfficialName']}), RM (#{rm.title})".yellow 
+      end
+      puts "\t\t- Title #{comparison}"
     end
-    puts "\t- Title #{comparison}"
     
     #Comparing affiliations
     if rm.affiliations.collect(&:name).map { |a| a.split(":").first }.include?("faculty") == isFaculty
