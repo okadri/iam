@@ -184,7 +184,23 @@ if @iamId.nil?
     end
   end
 else
-  fetch_by_iamId(@iamId)
+  ## Third, fetch the kerberos userid
+  url = "#{@site}iam/people/prikerbacct/#{@iamId}?key=#{@key}&v=1.0"
+  # Fetch URL
+  resp = Net::HTTP.get_response(URI.parse(url))
+  # Parse results
+  buffer = resp.body
+  result = JSON.parse(buffer)
+
+  begin
+    loginid = result["responseData"]["results"][0]["userId"]
+  rescue
+    puts "ID# #{@iamId} does not have a loginId in IAM".light_red
+    exit
+  end
+
+  person = Person.find(loginid)
+  fetch_by_iamId(@iamId,person.id)
   @total = 1
 end
 
