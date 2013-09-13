@@ -152,6 +152,23 @@ def fetch_by_iamId(id,rm_id)
     end
     puts "\t- Title #{comparison}"
     
+    #Comparing affiliations
+    if rm.affiliations.collect(&:name).map { |a| a.split(":").first }.include?("faculty") == isFaculty
+      puts "\t- Faculty Status: matches (#{isFaculty})".green
+    else
+      puts "\t- Faculty Status: differs IAM (#{isFaculty})".yellow
+    end
+    if rm.affiliations.collect(&:name).map { |a| a.split(":").first }.include?("staff") == isStaff
+      puts "\t- Staff Status: matches (#{isStaff})".green
+    else
+      puts "\t- Staff Status: differs IAM (#{isStaff})".yellow
+    end
+    if rm.affiliations.collect(&:name).map { |a| a.split(":").first }.include?("student") == isStudent
+      puts "\t- Student Status: matches (#{isStudent})".green
+    else
+      puts "\t- Student Status: differs IAM (#{isStudent})".yellow
+    end
+    
     @successfullyCompared += 1
   rescue StandardError => e
     puts "Cannot process ID#: #{id} -- #{e.message} #{e.backtrace.inspect}".light_red
