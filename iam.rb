@@ -141,8 +141,14 @@ def fetch_by_iamId(id,rm_id)
     puts "\t- Address #{comparison}"
 
     #Comparing Associations
+    rm_depts = rm.group_memberships.select{ |x| x.ou == true }.collect(&:name).map(&:downcase)
     associations.each do |a|
-      puts "\t- #{a['deptOfficialName']}"
+      if rm_depts.include?(a["deptOfficialName"].downcase)
+        comparison = "exists".green
+      else
+        comparison = "differs RM (#{rm_depts})".yellow 
+      end
+      puts "\t- #{a['deptOfficialName']} #{comparison}"
       if a["titleOfficialName"] == rm.title
         comparison = "matches".green
       else
