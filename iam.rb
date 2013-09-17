@@ -191,8 +191,8 @@ if @iamId.nil?
   rm_people.each do |p|
     @total += 1
     person = Person.find(p.loginid)
-    first = person.first.gsub(/\s+/, '') unless person.first.nil?
-    last = person.last.gsub(/\s+/, '') unless person.last.nil?
+    first = person.first.gsub(/\s+/, '%20') unless person.first.nil?
+    last = person.last.gsub(/\s+/, '%20') unless person.last.nil?
     url = "#{@site}iam/people/search?oFirstName=#{first}&oLastName=#{last}&key=#{@key}&v=1.0"
     # Fetch URL
     resp = Net::HTTP.get_response(URI.parse(url))
