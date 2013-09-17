@@ -43,7 +43,7 @@ require './models/person.rb'
 ### Method to get individual info
 def fetch_by_iamId(id,rm_id)
   begin
-    ## First, fetch the person
+    ## Fetch the person
     url = "#{@site}iam/people/search/?iamId=#{id}&key=#{@key}&v=1.0"
     # Fetch URL
     resp = Net::HTTP.get_response(URI.parse(url))
@@ -59,7 +59,7 @@ def fetch_by_iamId(id,rm_id)
     isStudent = result["responseData"]["results"][0]["isStudent"]
     isStaff = result["responseData"]["results"][0]["isStaff"]
 
-    ## Second, fetch the contact info
+    ## Fetch the contact info
     url = "#{@site}iam/people/contactinfo/#{id}?key=#{@key}&v=1.0"
     # Fetch URL
     resp = Net::HTTP.get_response(URI.parse(url))
@@ -71,7 +71,7 @@ def fetch_by_iamId(id,rm_id)
     phone = result["responseData"]["results"][0]["workPhone"]
     address = result["responseData"]["results"][0]["postalAddress"]
 
-    ## Third, fetch the kerberos userid
+    ## Fetch the kerberos userid
     url = "#{@site}iam/people/prikerbacct/#{id}?key=#{@key}&v=1.0"
     # Fetch URL
     resp = Net::HTTP.get_response(URI.parse(url))
@@ -85,7 +85,7 @@ def fetch_by_iamId(id,rm_id)
       puts "ID# #{id} does not have a loginId in IAM".light_red
     end
 
-    ## Forth, fetch the association
+    ## Fetch the association
     url = "#{@site}iam/associations/pps/search?iamId=#{id}&key=#{@key}&v=1.0"
     # Fetch URL
     resp = Net::HTTP.get_response(URI.parse(url))
@@ -100,7 +100,7 @@ def fetch_by_iamId(id,rm_id)
     rm = Person.find(rm_id)
     puts "IAM_ID: #{id} --> RM_ID #{rm_id} (#{rm.first} #{rm.last}):".cyan
 
-    #Comparing First Name
+    # Comparing First Name
     if first == rm.first
       comparison = "matches".green
     else
@@ -108,7 +108,7 @@ def fetch_by_iamId(id,rm_id)
     end
     puts "\t- First name #{comparison}"
 
-    #Comparing Last Name
+    # Comparing Last Name
     if last == rm.last
       comparison = "matches".green
     else
@@ -246,7 +246,7 @@ if @iamId.nil?
     end
   end
 else
-  ## Third, fetch the kerberos userid
+  ## Fetch the kerberos userid
   url = "#{@site}iam/people/prikerbacct/#{@iamId}?key=#{@key}&v=1.0"
   # Fetch URL
   resp = Net::HTTP.get_response(URI.parse(url))
