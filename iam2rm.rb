@@ -10,6 +10,8 @@ OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
 Bundler.require
 
+load 'UcdLookups.rb'
+
 IAM_SETTINGS_FILE = "config/iam.yml"
 DSS_RM_FILE = "config/dss_rm.yml"
 
@@ -184,28 +186,33 @@ end
 
 ### In case no arguments are provided, we fetch for all people in UcdLookups departments
 if @iamId.nil?
-  url = "#{@site}iam/associations/sis/search?collegeCode=GS&majorCode=GPSC&key=#{@key}&v=1.0"
-  # Fetch URL
-  resp = Net::HTTP.get_response(URI.parse(url))
-  # Parse results
-  buffer = resp.body
-  result = JSON.parse(buffer)
-
-  result["responseData"]["results"].each do |p|
-    @total += 1
-    iamID = p["iamId"]
-    url = "#{@site}iam/people/prikerbacct/#{iamID}?key=#{@key}&v=1.0"
+  for m in UcdLookups::MAJORS.values()
+    puts "Processing graduate students in #{m}".magenta
+    url = "#{@site}iam/associations/sis/search?collegeCode=GS&majorCode=#{m}&key=#{@key}&v=1.0"
     # Fetch URL
     resp = Net::HTTP.get_response(URI.parse(url))
     # Parse results
     buffer = resp.body
     result = JSON.parse(buffer)
-    begin
-      loginid = result["responseData"]["results"][0]["userId"]
-      person = Person.find(loginid)
-      fetch_by_iamId(iamID,person.id)
-    rescue
-      puts "ID# #{id} does not have a loginId in IAM".light_red
+
+    result["responseData"]["results"].each do |p|
+      @total += 1
+      iamID = p["iamId"]
+      url = "#{@site}iam/people/prikerbacct/#{iamID}?key=#{@key}&v=1.0"
+      # Fetch URL
+      resp = Net::HTTP.get_response(URI.parse(url))
+      # Parse results
+      buffer = resp.body
+      result = JSON.parse(buffer)
+      begin
+        loginid = result["responseData"]["results"][0]["userId"]
+        unless loginid.nil?
+          person = Person.find(loginid)
+          fetch_by_iamId(iamID,person.id)
+        end
+      rescue
+        puts "ID# #{id} does not have a loginId in IAM".light_red
+      end
     end
   end
 else

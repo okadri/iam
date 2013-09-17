@@ -36,15 +36,15 @@ module UcdLookups
       'MICROBIOLOGY' => 'DSS IT SERVICE CENTER'
   }
   
-	MAJORS["Anthropology"] = "040020"
-	MAJORS["Linguistics"] = "040210"
-	MAJORS["Philosophy"] = "040250"
-	MAJORS["Psychology"] = "040290"
-	MAJORS["Political Science"] = "040280"
-	MAJORS["Communication"] = "040310"
-	MAJORS["Economics"] = "040110"
-	MAJORS["Sociology"] = "040320"
-	MAJORS["History"] = "040180"
+	MAJORS["Anthropology"] = "GANT"
+	MAJORS["Linguistics"] = "GLIN"
+	MAJORS["Philosophy"] = "GPHI"
+	MAJORS["Psychology"] = "GPSC"
+	MAJORS["Political Science"] = "GPOL"
+	MAJORS["Communication"] = "GCMN"
+	MAJORS["Economics"] = "GECN"
+	MAJORS["Sociology"] = "GSOC"
+	MAJORS["History"] = "GHIS"
 
 	DEPT_CODES["040325"] = {}
 		DEPT_CODES["040325"]["name"] = "SOCIAL SCIENCES PROGRAM"
