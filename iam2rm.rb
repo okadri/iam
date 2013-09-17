@@ -15,7 +15,7 @@ load 'UcdLookups.rb'
 IAM_SETTINGS_FILE = "config/iam.yml"
 DSS_RM_FILE = "config/dss_rm.yml"
 
-@total = @successfullyCompared = @notFound = @erroredOut = 0
+@total = @successfullyCompared = @notFound = @erroredOut = @noKerberos = 0
 timestamp_start = Time.now
 
 ### Import the IAM site and key from the yaml file
@@ -186,6 +186,37 @@ end
 
 ### In case no arguments are provided, we fetch for all people in UcdLookups departments
 if @iamId.nil?
+  for d in UcdLookups::DEPT_CODES.keys()
+    ## Fetch department members
+    url = "#{@site}iam/associations/pps/search?deptCode=#{d}&key=#{@key}&v=1.0"
+    
+    # Fetch URL
+    resp = Net::HTTP.get_response(URI.parse(url))
+    # Parse results
+    buffer = resp.body
+    result = JSON.parse(buffer)
+
+    # loop over members
+    result["responseData"]["results"].each do |p|
+      @total += 1
+      iamID = p["iamId"]
+      url = "#{@site}iam/people/prikerbacct/#{iamID}?key=#{@key}&v=1.0"
+      # Fetch URL
+      resp = Net::HTTP.get_response(URI.parse(url))
+      # Parse results
+      buffer = resp.body
+      result = JSON.parse(buffer)
+
+      begin
+        loginid = result["responseData"]["results"][0]["userId"]
+        person = Person.find(loginid)
+        fetch_by_iamId(iamID,person.id)
+      rescue
+        @noKerberos += 1
+        puts "ID# #{iamID} does not have a loginId in IAM".light_red
+      end
+     end
+  end
   for m in UcdLookups::MAJORS.values()
     puts "Processing graduate students in #{m}".magenta
     url = "#{@site}iam/associations/sis/search?collegeCode=GS&majorCode=#{m}&key=#{@key}&v=1.0"
@@ -206,12 +237,11 @@ if @iamId.nil?
       result = JSON.parse(buffer)
       begin
         loginid = result["responseData"]["results"][0]["userId"]
-        unless loginid.nil?
-          person = Person.find(loginid)
-          fetch_by_iamId(iamID,person.id)
-        end
+        person = Person.find(loginid)
+        fetch_by_iamId(iamID,person.id)
       rescue
-        puts "ID# #{id} does not have a loginId in IAM".light_red
+        @noKerberos += 1
+        puts "ID# #{iamID} does not have a loginId in IAM".light_red
       end
     end
   end
@@ -240,6 +270,7 @@ timestamp_finish = Time.now
 
 puts "\n\nFinished comparing a total of #{@total}:\n"
 puts "\t- #{@successfullyCompared} successfully compared.\n"
+puts "\t- #{@noKerberos} did not have LoginID in IAM.\n"
 puts "\t- #{@notFound} were not found in IAM.\n"
 puts "\t- #{@erroredOut} errored out due to some missing fields.\n"
 puts "Time elapsed: " + Time.at(timestamp_finish - timestamp_start).gmtime.strftime('%R:%S')
