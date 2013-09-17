@@ -96,6 +96,17 @@ def fetch_by_iamId(id,rm_id)
     associations = result['responseData']['results']
 
 
+    ## Fetch the student associations
+    url = "#{@site}iam/associations/sis/#{id}?key=#{@key}&v=1.0"
+    # Fetch URL
+    resp = Net::HTTP.get_response(URI.parse(url))
+    # Parse results
+    buffer = resp.body
+    result = JSON.parse(buffer)
+
+    student_associations = result['responseData']['results']
+
+
     ## Display the results (Or insert them in database)
     rm = Person.find(rm_id)
     puts "IAM_ID: #{id} --> RM_ID #{rm_id} (#{rm.first} #{rm.last}):".cyan
@@ -155,6 +166,22 @@ def fetch_by_iamId(id,rm_id)
         comparison = "matches".green
       else
         comparison = "differs: IAM (#{a['titleOfficialName']}), RM (#{rm.title})".yellow 
+      end
+      puts "\t\t- Title #{comparison}"
+    end
+
+    # Comparing Student Associations
+    student_associations.each do |a|
+      if rm_depts.include?(a["majorName"].downcase)
+        comparison = "exists".green
+      else
+        comparison = "differs RM (#{rm_depts})".yellow 
+      end
+      puts "\t- #{a['majorName']} #{comparison}"
+      if a["levelName"] == rm.title
+        comparison = "matches".green
+      else
+        comparison = "differs: IAM (#{a['levelName']}), RM (#{rm.title})".yellow 
       end
       puts "\t\t- Title #{comparison}"
     end
