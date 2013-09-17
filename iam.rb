@@ -1,13 +1,16 @@
 require 'rubygems'
 require 'bundler/setup'
-Bundler.require
-
 require 'net/http'
 require 'json'
 require 'yaml'
+
+Bundler.require
+
 load 'UcdLookups.rb'
+
 IAM_SETTINGS_FILE = "config/iam.yml"
 DSS_RM_FILE = "config/dss_rm.yml"
+
 @total = @successfullyCompared = @notFound = @erroredOut = 0
 timestamp_start = Time.now
 
@@ -114,7 +117,7 @@ def fetch_by_iamId(id,rm_id)
     end
     puts "\t- Last name #{comparison}"
 
-    #Comparing Email
+    # Comparing Email
     if email == rm.email
       comparison = "matches".green
     else
@@ -122,7 +125,7 @@ def fetch_by_iamId(id,rm_id)
     end
     puts "\t- Email #{comparison}"
 
-    #Comparing Phone
+    # Comparing Phone
     unless phone.nil? or rm.phone.nil?
       if phone.gsub(/[^0-9]/,'') == rm.phone.gsub(/[^0-9]/,'')
         comparison = "matches".green
@@ -132,7 +135,7 @@ def fetch_by_iamId(id,rm_id)
       puts "\t- Phone #{comparison}"
     end
 
-    #Comparing Address
+    # Comparing Address
     if address == rm.address
       comparison = "matches".green
     else
@@ -140,7 +143,7 @@ def fetch_by_iamId(id,rm_id)
     end
     puts "\t- Address #{comparison}"
 
-    #Comparing Associations
+    # Comparing Associations
     rm_depts = rm.group_memberships.select{ |x| x.ou == true }.collect(&:name).map(&:downcase)
     associations.each do |a|
       if rm_depts.include?(a["deptOfficialName"].downcase)
@@ -157,7 +160,7 @@ def fetch_by_iamId(id,rm_id)
       puts "\t\t- Title #{comparison}"
     end
     
-    #Comparing affiliations
+    # Comparing affiliations
     if rm.affiliations.collect(&:name).map { |a| a.split(":").first }.include?("faculty") == isFaculty
       puts "\t- Faculty Status: matches (#{isFaculty})".green
     else
